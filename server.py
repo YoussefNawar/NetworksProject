@@ -1,5 +1,6 @@
 # echo-server.py
 
+from base64 import decode
 import socket
 from _thread import *
 import threading
@@ -12,6 +13,7 @@ def parse_command(command):
     method = x[0]
     file_name = x[1]
     return method, file_name
+
 def threading(conn):
     while True:
         data = conn.recv(1024)
@@ -21,12 +23,22 @@ def threading(conn):
         request = data.decode()
         method, file_name = parse_command(request)
         if method == "GET":
-            f = open(f"{file_name}", mode="r")
-            file = f.read()
-            f.close()  # Send HTTP response
-            response = 'HTTP/1.0 200 OK\n\n' + file
-            conn.sendall(response.encode())
-        
+            try:
+                f = open(f"{file_name}", mode="r")
+                file = f.read()
+                f.close()  # Send HTTP response
+                response = 'HTTP/1.0 200 OK\n\n' + file
+                conn.sendall(response.encode())
+            except IOError:
+                response = 'HTTP/1.0 404 NOT FOUND\r\n'
+                conn.sendall(response.encode())
+        elif method =='POST':
+            data = conn.recv(1024)
+            f = open("kosom_sengab", "a")
+            f.write(data.decode())
+            f.close()
+            response = 'HTTP/1.0 200 OK\r\n'
+            conn.sendall(response.encode())          
     conn.close()
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:

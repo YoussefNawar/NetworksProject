@@ -33,7 +33,7 @@ for i in commands:
         s.sendall(bytes(request,"utf-8"))
         if method == "GET":
             data = s.recv(4096)
-            print(f"Received {data!r}")
+            print(f"{data!r}")
         elif method == "POST":
             try:
                 f = open(f"{file_name}",mode ="r")
