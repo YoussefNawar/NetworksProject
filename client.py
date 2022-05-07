@@ -26,8 +26,10 @@ commands = parse_file("commands.txt")
 for i in commands:
     method , file_name, HOST, PORT = parse(i)
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((HOST, PORT))
-        request = f"{method} {file_name} HTTP/1.0\nHOST :{HOST} {PORT}" 
+        print(HOST)
+        print(PORT)
+        s.connect((str(HOST), int(PORT)))
+        request = f"{method} {file_name} HTTP/1.0" 
         s.sendall(bytes(request,"utf-8"))
         if method is "GET":
             data = s.recv(1024)

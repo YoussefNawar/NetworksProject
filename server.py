@@ -16,7 +16,7 @@ def threading(conn):
     while True:
         data = conn.recv(1024)
         request = data.decode
-        method, file_name = parse_command(request)
+        method, file_name = parse_command(str(request))
         if method is "GET":
             f = open(f"{file_name}", mode="r")
             file = f.read()
@@ -24,7 +24,9 @@ def threading(conn):
             response = 'HTTP/1.0 200 OK\n\n' + file
             conn.sendall(response.encode())
         if not data:
+            print_lock.release()
             break
+    conn.close()
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.bind((HOST, PORT))
@@ -35,8 +37,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         print_lock.acquire()
         with conn:
             print(f"Connected by {addr}")
-            threading(conn)
-    s.close
+            start_new_thread(threading,(conn,))
+    
         # while True:
         #     data = conn.recv(1024)
         #     request = data.decode
