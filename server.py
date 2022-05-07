@@ -15,17 +15,18 @@ def parse_command(command):
 def threading(conn):
     while True:
         data = conn.recv(1024)
-        request = data.decode
-        method, file_name = parse_command(str(request))
-        if method is "GET":
+        if not data:
+            print_lock.release()
+            break
+        request = data.decode()
+        method, file_name = parse_command(request)
+        if method == "GET":
             f = open(f"{file_name}", mode="r")
             file = f.read()
             f.close()  # Send HTTP response
             response = 'HTTP/1.0 200 OK\n\n' + file
             conn.sendall(response.encode())
-        if not data:
-            print_lock.release()
-            break
+        
     conn.close()
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -35,9 +36,9 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     while True:
         conn, addr = s.accept()
         print_lock.acquire()
-        with conn:
-            print(f"Connected by {addr}")
-            start_new_thread(threading,(conn,))
+        #with conn:
+        print(f"Connected by {addr}")
+        start_new_thread(threading,(conn,))
     
         # while True:
         #     data = conn.recv(1024)

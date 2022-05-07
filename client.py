@@ -31,10 +31,10 @@ for i in commands:
         s.connect((str(HOST), int(PORT)))
         request = f"{method} {file_name} HTTP/1.0" 
         s.sendall(bytes(request,"utf-8"))
-        if method is "GET":
-            data = s.recv(1024)
+        if method == "GET":
+            data = s.recv(4096)
             print(f"Received {data!r}")
-        elif method is "POST":
+        elif method == "POST":
             try:
                 f = open(f"{file_name}",mode ="r")
                 file = f.read()
