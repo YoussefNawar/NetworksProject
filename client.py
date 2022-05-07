@@ -29,7 +29,7 @@ for i in commands:
         print(HOST)
         print(PORT)
         s.connect((str(HOST), int(PORT)))
-        request = f"{method} {file_name} HTTP/1.0/r/n HOST:{HOST} {PORT}" 
+        request = f"{method} {file_name} HTTP/1.0/r/n HOST:{HOST}:{PORT}" 
         s.sendall(bytes(request,"utf-8"))
         if method == "GET":
             data = s.recv(4096)
