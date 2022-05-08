@@ -5,8 +5,11 @@ import socket
 from _thread import *
 import threading
 print_lock = threading.Lock()
-HOST = "127.0.0.1"  # Standard loopback interface address (localhost)
-PORT = 65432  # Port to listen on (non-privileged ports are > 1023)
+HOST = input("Enter the server IP : ")
+PORT = input("Enter the server port number :")
+
+#HOST = "127.0.0.1"  # Standard loopback interface address (localhost)
+#PORT = 65432  # Port to listen on (non-privileged ports are > 1023)
 
 def parse_command(command):
     x = command.split()
