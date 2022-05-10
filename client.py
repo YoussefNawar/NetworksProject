@@ -4,7 +4,7 @@ import socket
 
 # HOST = "127.0.0.1"  # The server's hostname or IP address
 # PORT = 65432  # The port used by the server
-# dir = "/Users/youssefnawar/PycharmProjects/NetworksProject/"
+# dir = "/ClientFiles"
 
 def parse_file(file_name):
     f = open(f"{file_name}", mode = "r")
@@ -26,20 +26,22 @@ commands = parse_file("commands.txt")
 for i in commands:
     method , file_name, HOST, PORT = parse(i)
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        print("Starting socket connection with")
         print(HOST)
         print(PORT)
         s.connect((str(HOST), int(PORT)))
-        request = f"{method} {file_name} HTTP/1.0/r/n HOST:{HOST}:{PORT}" 
-        s.sendall(bytes(request,"utf-8"))
         if method == "GET":
+            request = f"{method}/{file_name} HTTP/1.0\r\nHOST:{HOST}:{PORT}\r\n\r\n" 
+            s.sendall(bytes(request,"utf-8"))
             data = s.recv(4096)
             print(f"{data!r}")
         elif method == "POST":
-            try:
+            try:       
                 f = open(f"{file_name}",mode ="r")
                 file = f.read()
                 f.close()
-                s.sendall(bytes(file,"utf-8"))
+                request = f"{method}/{file_name} HTTP/1.0\r\nHOST:{HOST}:{PORT}\r\n\r\n{file}\r\n" 
+                s.sendall(bytes(request,"utf-8"))
             except IOError:
                 print("FILE NOT FOUND")
         s.close()
