@@ -24,13 +24,14 @@ def parse(cmd):
     return method,file_name,host,80
 
 commands = parse_file("commands.txt")
-for i in commands:
-    method , file_name, HOST, PORT = parse(i)
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        print(f"Starting socket connection with {HOST}:{PORT}")
-        s.connect((str(HOST), int(PORT)))
+
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    s.connect((str("127.0.0.1"), int(65432)))
+    print(f"Starting socket connection with 127.0.0.1:65432")
+    for i in commands:
+        method , file_name, HOST, PORT = parse(i)
         if method == "GET":
-            request = f"{method} /{file_name} HTTP/1.0\r\nHOST:{HOST}:{PORT}\r\n\r\n" 
+            request = f"{method} /{file_name} HTTP/1.1\r\nHOST:{HOST}:{PORT}\r\n\r\n" 
             s.sendall(request.encode())
             data = s.recv(4096)
             print("Waiting for data from server....")
@@ -41,10 +42,10 @@ for i in commands:
                 file = f.read()
                 print(file)
                 f.close()
-                request = f"POST /{file_name} HTTP/1.0\r\nHOST:{HOST}:{PORT}\r\n\r\n{file}\r\n" 
+                request = f"POST /{file_name} HTTP/1.1\r\nHOST:{HOST}:{PORT}\r\n\r\n{file}\r\n" 
                 s.sendall(request.encode())
             except IOError:
                 print("FILE NOT FOUND")
-        # s.close()
-        sleep(10)
+sleep(10)
+s.close()
 
