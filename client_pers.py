@@ -33,8 +33,13 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         if method == "GET":
             request = f"{method} /{file_name} HTTP/1.1\r\nHOST:{HOST}:{PORT}\r\n\r\n" 
             s.sendall(request.encode())
-            data = s.recv(4096)
             print("Waiting for data from server....")
+            data = b''
+            while True:
+                buf = s.recv(4096) 
+                if not buf:
+                    break
+                data += buf
             print(f"{data}")
         elif method == "POST":
             try:       
@@ -46,6 +51,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.sendall(request.encode())
             except IOError:
                 print("FILE NOT FOUND")
-sleep(10)
+        sleep(2)
+# sleep(10)
 s.close()
 
