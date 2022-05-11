@@ -40,8 +40,7 @@ for i in commands:
 
             else:
 
-                request = f"{method} /{file_name} HTTP/1.0\r\nHOST:{HOST}:{PORT}\r\n\r\n"
-
+                request = f"{method} /{file_name} HTTP/1.0\r\nHOST: {HOST}:{PORT}\r\n\r\n"
                 s.sendall(request.encode())
                 data = s.recv(4096)
                 print("Waiting for data from server....")
@@ -52,7 +51,7 @@ for i in commands:
                 f = open(f"{dir}/{file_name}",mode ="r")
                 file = f.read()
                 f.close()
-                request = f"POST /{file_name} HTTP/1.0\r\nHOST:{HOST}:{PORT}\r\n\r\n{file}" 
+                request = f"POST /{file_name} HTTP/1.0\r\nHOST: {HOST}:{PORT}\r\n\r\n{file}" 
                 s.sendall(request.encode())
             except IOError:
                 print("FILE NOT FOUND")
