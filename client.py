@@ -40,7 +40,7 @@ for i in commands:
                 f = open(f"{dir}/{file_name}",mode ="r")
                 file = f.read()
                 f.close()
-                request = f"POST /{file_name} HTTP/1.0\r\nHOST:{HOST}:{PORT}\r\n\r\n{file}\r\n" 
+                request = f"POST /{file_name} HTTP/1.0\r\nHOST:{HOST}:{PORT}\r\n\r\n{file}" 
                 s.sendall(request.encode())
             except IOError:
                 print("FILE NOT FOUND")

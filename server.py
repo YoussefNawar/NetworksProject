@@ -18,23 +18,23 @@ def getTimeOutValue():
 def parse_request(command):
     x = command.split(' /',1)
     method = x[0]
-    x = x[1].split(" ",1)
-    file_name = x[0]
-    x = x[1].split('\r\n',1)
-    protocol = x[0]
-    x = x[1].split(':')
-    host = x[1]
-    port = x[2].split('\r\n\r\n',1)[0]
+    y = x[1].split(" ",2)
+    file_name = y[0]
+    protocol = y[1].split('\r\n')[0]
+    x = y[2].split('\r\n\r\n')
+    # host = x[1]
+    # port = x[2].split('\r\n\r\n',1)[0]
     if method =="POST":
-        file = x[2].split('\r\n\r\n',1)[1].split('\r\n')[0]
-        return method, file_name,protocol,host,port,file
-    return method, file_name,protocol,host,port,None
+        file = x[1]
+        return method, file_name,protocol,None,None,file
+    return method, file_name,protocol,None,None,None
 
 
 def threading(conn):
     data = conn.recv(1024)
     request = data.decode()
     method, file_name,protocol,host,port,file = parse_request(request)
+    print(parse_request(request))
     if protocol == 'HTTP/1.0':
         response = handle_request(conn, method, file_name, file)
         conn.sendall(response.encode())
@@ -44,6 +44,7 @@ def threading(conn):
     elif protocol =="HTTP/1.1":
         conn.settimeout(10)
         response = handle_request(conn,method,file_name,file)
+        print(response)
         conn.sendall(response.encode())
         print("Data is sent")
         data =b''
@@ -115,4 +116,5 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         print_lock.acquire()
         start_new_thread(threading,(conn,))
 
-
+# habal = parse_request("POST /tesrwvrt.txt HTTP/1.1\nContent-Type: text/plain\nPostman-Token: 8952b183-6f71-4ea7-93d9-ebcfe207b717\nHost: 127.0.0.1:65432\nContent-Length: 13\r\n\r\nkjbrvsnvkrsnv")
+# print(habal)
