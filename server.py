@@ -86,18 +86,18 @@ def handle_request(conn, method, file_name,file):
             print("Reading file")
             file_read = f.read()
             f.close()  # Send HTTP response
-            response = 'HTTP/1.1 200 OK\r\n' + file_read +'\r\n\r\n'
+            response = 'HTTP/1.1 200 OK\r\n\r\n' + file_read
             return response
         except IOError:
             print("IO Error")
-            response = 'HTTP/1.1 404 NOT FOUND\r\n'
+            response = 'HTTP/1.1 404 NOT FOUND\r\n\r\n'
             return response
     elif method =='POST':
         data = file
         f = open(f"{dir}/{file_name}", "w")
         f.write(data)
         f.close()
-        response = 'HTTP/1.1 200 OK\r\n'
+        response = 'HTTP/1.1 200 OK\r\n\r\n'
         return response
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
