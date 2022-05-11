@@ -12,6 +12,7 @@ def parse_file(file_name):
     commands = f.read().split("\n")
     f.close()
     return commands
+cache = {}
 
 def parse(cmd):
     x = cmd.split()
@@ -30,11 +31,22 @@ for i in commands:
         print(f"Starting socket connection with {HOST}:{PORT}")
         s.connect((str(HOST), int(PORT)))
         if method == "GET":
-            request = f"{method} /{file_name} HTTP/1.0\r\nHOST:{HOST}:{PORT}\r\n\r\n" 
-            s.sendall(request.encode())
-            data = s.recv(4096)
-            print("Waiting for data from server....")
-            print(f"{data.decode()}")
+            if file_name in cache:
+                print("This file is located in the  cache")
+                f = open(f"{dir}/{file_name}", mode="r")
+                file = f.read()
+                print(file)
+                f.close()
+
+            else:
+
+                request = f"{method} /{file_name} HTTP/1.0\r\nHOST:{HOST}:{PORT}\r\n\r\n"
+
+                s.sendall(request.encode())
+                data = s.recv(4096)
+                print("Waiting for data from server....")
+                print(f"{data.decode()}")
+                cache.update(file_name)
         elif method == "POST":
             try:       
                 f = open(f"{dir}/{file_name}",mode ="r")
