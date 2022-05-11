@@ -1,2 +1,3 @@
 POST test.txt 127.0.0.1 65432
 GET test2.txt 127.0.0.1 65432
+GET test2.txt 127.0.0.1 65432

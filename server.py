@@ -42,18 +42,21 @@ def threading(conn):
         conn.close()
         print_lock.release()
     elif protocol =="HTTP/1.1":
-        conn.settimeout(15)
+        conn.settimeout(7)
         response = handle_request(conn,method,file_name,file)
         try:
             while True:
                 print("Entered while loop")
                 data = conn.recv(1024)
-                if data:
-                    request = data.decode()
-                    method, file_name,protocol,host,port,file = parse_request(request)
-                    print(method)
-                    response = handle_request(conn,method,file_name,file)
-                    conn.sendall(response.encode())
+                if not data:
+                    break
+                # if data:
+                request = data.decode()
+                method, file_name,protocol,host,port,file = parse_request(request)
+                # print(method)
+                response = handle_request(conn,method,file_name,file)
+                conn.sendall(response.encode())
+                print("Data is sent")
                 # if not data:
                 #     break
                 # print(request)
