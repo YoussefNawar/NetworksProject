@@ -42,30 +42,42 @@ def threading(conn):
         conn.close()
         print_lock.release()
     elif protocol =="HTTP/1.1":
-        conn.settimeout(7)
+        conn.settimeout(10)
         response = handle_request(conn,method,file_name,file)
-        try:
-            while True:
+        conn.sendall(response.encode())
+        print("Data is sent")
+        data =b''
+        try: 
+            while True:       
                 print("Entered while loop")
                 data = conn.recv(1024)
+                data = data.decode()
+                if data:
+                    print(data)
+                    method, file_name,protocol,host,port,file = parse_request(data)
+                    response = handle_request(conn,method,file_name,file)
+                    conn.sendall(response.encode())
                 if not data:
-                    break
-                # if data:
-                request = data.decode()
-                method, file_name,protocol,host,port,file = parse_request(request)
-                # print(method)
-                response = handle_request(conn,method,file_name,file)
-                conn.sendall(response.encode())
-                print("Data is sent")
-                # if not data:
-                #     break
-                # print(request)
+                    print("Closing connection.....")
+                    conn.close()
+                    print_lock.release()
+                    return
         except socket.timeout as e:
             print("Time out!")
             print("Closing connection.....")
             conn.close()
             print_lock.release()
             return
+            # if data:
+            #     request = data.decode()
+            #     method, file_name,protocol,host,port,file = parse_request(request)
+            #     response = handle_request(conn,method,file_name,file)
+            #     conn.sendall(response.encode())
+            #     print("Data is sent")
+            # else:
+            #     conn.close()
+            #     print_lock.release()
+
 
 def handle_request(conn, method, file_name,file):
     if method == "GET":
@@ -74,18 +86,18 @@ def handle_request(conn, method, file_name,file):
             print("Reading file")
             file_read = f.read()
             f.close()  # Send HTTP response
-            response = 'HTTP/1.0 200 OK\r\n' + file_read +'\r\n\r\n'
+            response = 'HTTP/1.1 200 OK\r\n' + file_read +'\r\n\r\n'
             return response
         except IOError:
             print("IO Error")
-            response = 'HTTP/1.0 404 NOT FOUND\r\n'
+            response = 'HTTP/1.1 404 NOT FOUND\r\n'
             return response
     elif method =='POST':
         data = file
-        f = open(f"{dir}/{file_name}", "a")
+        f = open(f"{dir}/{file_name}", "w")
         f.write(data)
         f.close()
-        response = 'HTTP/1.0 200 OK\r\n'
+        response = 'HTTP/1.1 200 OK\r\n'
         return response
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:

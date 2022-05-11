@@ -34,12 +34,11 @@ for i in commands:
             s.sendall(request.encode())
             data = s.recv(4096)
             print("Waiting for data from server....")
-            print(f"{data}")
+            print(f"{data.decode()}")
         elif method == "POST":
             try:       
                 f = open(f"{dir}/{file_name}",mode ="r")
                 file = f.read()
-                print(file)
                 f.close()
                 request = f"POST /{file_name} HTTP/1.0\r\nHOST:{HOST}:{PORT}\r\n\r\n{file}\r\n" 
                 s.sendall(request.encode())

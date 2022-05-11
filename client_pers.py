@@ -40,17 +40,17 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 if not buf:
                     break
                 data += buf
-            print(f"{data}")
+            print(f"{data.decode()}")
         elif method == "POST":
             try:       
                 f = open(f"{dir}/{file_name}",mode ="r")
                 file = f.read()
-                print(file)
                 f.close()
                 request = f"POST /{file_name} HTTP/1.1\r\nHOST:{HOST}:{PORT}\r\n\r\n{file}\r\n" 
                 s.sendall(request.encode())
             except IOError:
                 print("FILE NOT FOUND")
+        # sleep(5)
         sleep(2)
 # sleep(10)
 s.close()
