@@ -29,17 +29,31 @@ def parse(cmd):
 commands = parse_file("commands.txt")
 for i in commands:
     method , file_name, HOST, PORT, EXT = parse(i)
-    if file_name in cache:
+    request = f"{method} /{file_name} HTTP/1.1\r\nHOST: {HOST}:{PORT}\r\n\r\n"
+    if request in cache:
         if EXT == "png":
             print("This file is located in the  cache")
-            f = open(f"{dir}/{file_name}", mode="rb")
-            file = f.read()
-            f.close()
+            x = cache.get(request)
+            #print(x)
+
+            x1 = x.split(b"\r\n\r\n")[0].decode()
+            print(x1)
+            x2 = x.split(b"\r\n\r\n")[1]
+            print(x2)
+            #f = open(f"{dir}/{file_name}", mode="rb")
+            #file = f.read()
+            #f.close()
         else:
+
             print("This file is located in the  cache")
-            f = open(f"{dir}/{file_name}", mode="r")
-            file = f.read()
-            f.close()
+            x = cache.get(request)
+            x1 = x.split("\r\n\r\n")[0]
+            print(x1)
+            x2 = x.split("\r\n\r\n")[1]
+            print(x2)
+           # f = open(f"{dir}/{file_name}", mode="r")
+           # file = f.read()
+           # f.close()
 
                 
     else:
@@ -47,7 +61,7 @@ for i in commands:
             print(f"Starting socket connection with {HOST}:{PORT}")
             s.connect((str(HOST), int(PORT)))
             if method == "GET":
-                request = f"{method} /{file_name} HTTP/1.1\r\nHOST: {HOST}:{PORT}\r\n\r\n"
+               # request = f"{method} /{file_name} HTTP/1.1\r\nHOST: {HOST}:{PORT}\r\n\r\n"
                 s.sendall(request.encode())
                 data = s.recv(100000)
                 print("Waiting for data from server....")
@@ -57,14 +71,14 @@ for i in commands:
                     file_png = data.split(b"\r\n\r\n")[1]
                     file = f.write(file_png)
                     f.close()
-                    cache[file_name]=data
+                    cache[request]=data
                 else:
                     f = open(f"{dir}/{file_name}", mode="w")
                     content = data.split(b"\r\n\r\n")[1]
                     file = f.write(content.decode())
                     f.close()
-                    cache[file_name]=data.decode()
-                
+                    cache[request]=data.decode()
+
                 #print(f"{data.decode()}")
                 
             elif method == "POST":
