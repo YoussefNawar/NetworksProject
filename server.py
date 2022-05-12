@@ -35,7 +35,7 @@ def threading(conn):
     request = data.split(b"\r\n\r\n")[0].decode()
     method, file_name,protocol,host,port = parse_request(request)
     file = data.split(b"\r\n\r\n")[1]
-    print(parse_request(request))
+    #print(parse_request(request))
     if protocol == 'HTTP/1.0':
         response = handle_request(conn, method, file_name, file)
         conn.sendall(response)
@@ -94,12 +94,12 @@ def handle_request(conn, method, file_name,file):
                 f.close()  # Send HTTP response
                 response = 'HTTP/1.1 200 OK\r\n\r\n'
                 response = response.encode()    
-                response = response  + file_read
+                response = response  + file_read + b"\r\n"
             else:
                 f = open(f"{dir}{file_name}", mode="r")
                 file_read = f.read()
                 f.close()  # Send HTTP response
-                response = 'HTTP/1.1 200 OK\r\n\r\n' + file_read
+                response = 'HTTP/1.1 200 OK\r\n\r\n' + file_read +"\r\n"
                 response =response.encode()
             return response
         except IOError:

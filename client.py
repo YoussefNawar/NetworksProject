@@ -30,11 +30,18 @@ commands = parse_file("commands.txt")
 for i in commands:
     method , file_name, HOST, PORT, EXT = parse(i)
     if file_name in cache:
-                print("This file is located in the  cache")
-                f = open(f"{dir}/{file_name}", mode="r")
-                file = f.read()
-                print(file)
-                f.close()
+        if EXT == "png":
+            print("This file is located in the  cache")
+            f = open(f"{dir}/{file_name}", mode="rb")
+            file = f.read()
+            f.close()
+        else:
+            print("This file is located in the  cache")
+            f = open(f"{dir}/{file_name}", mode="r")
+            file = f.read()
+            f.close()
+
+                
     else:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             print(f"Starting socket connection with {HOST}:{PORT}")
@@ -47,22 +54,20 @@ for i in commands:
                 print("Waiting for data from server....")
                 
                 if EXT == "png":
-                    f = open(f"{dir}/{file_name}", mode="a")
-                    header = data.split(b"\r\n\r\n")[0]
-                    file = f.write(header.decode())
-                    f.close()
                     f = open(f"{dir}/{file_name}", mode="wb+")
                     file_png = data.split(b"\r\n\r\n")[1]
                     file = f.write(file_png)
                     f.close()
+                    cache[file_name]=data
                 else:
-                    f = open(f"{dir}/{file_name}", mode="a")
-                    file = f.write(data.decode())
+                    f = open(f"{dir}/{file_name}", mode="w")
+                    content = data.split(b"\r\n\r\n")[1]
+                    file = f.write(content.decode())
                     f.close()
-
+                    cache[file_name]=data.decode()
                 
                 #print(f"{data.decode()}")
-                cache[file_name]=dir
+                
             elif method == "POST":
                 try:       
                     if EXT == "png":
@@ -71,12 +76,12 @@ for i in commands:
                         f.close()
                         request = f"POST /{file_name} HTTP/1.0\r\nHOST: {HOST}:{PORT}\r\n\r\n"
                         request = request.encode()
-                        request = request + file 
+                        request = request + file + b"\r\n"
                     else:
                         f = open(f"{dir}/{file_name}",mode ="r")
                         file = f.read()
                         f.close()
-                        request = f"POST /{file_name} HTTP/1.0\r\nHOST: {HOST}:{PORT}\r\n\r\n{file}" 
+                        request = f"POST /{file_name} HTTP/1.0\r\nHOST: {HOST}:{PORT}\r\n\r\n{file}\r\n" 
                         request = request.encode()
                     s.sendall(request)
                 except IOError:
