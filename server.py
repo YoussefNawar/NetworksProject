@@ -125,10 +125,11 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     PORT = 65432
     print("Starting Server....")
     s.bind(("127.0.0.1", 65433))
-    s.listen()
+    #s.listen()
     print(f"Socket is bind to {HOST}:{PORT}")
     #conn, addr = s.accept()
     while True:
+        s.listen()
         conn, addr = s.accept()
         # conn.settimeout()
         print(f"Connected by {addr}")
