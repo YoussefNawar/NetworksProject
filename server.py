@@ -24,20 +24,21 @@ def parse_request(command):
     x = y[2].split('\r\n\r\n')
     # host = x[1]
     # port = x[2].split('\r\n\r\n',1)[0]
-    if method =="POST":
-        file = x[1]
-        return method, file_name,protocol,None,None,file
-    return method, file_name,protocol,None,None,None
+    #if method =="POST":
+     #   file = x[1]
+     #   return method, file_name,protocol,None,None,file
+    return method, file_name,protocol,None,None
 
 
 def threading(conn):
-    data = conn.recv(1024)
-    request = data.decode()
-    method, file_name,protocol,host,port,file = parse_request(request)
+    data = conn.recv(100000)
+    request = data.split(b"\r\n\r\n")[0].decode()
+    method, file_name,protocol,host,port = parse_request(request)
+    file = data.split(b"\r\n\r\n")[1]
     print(parse_request(request))
     if protocol == 'HTTP/1.0':
         response = handle_request(conn, method, file_name, file)
-        conn.sendall(response.encode())
+        conn.sendall(response)
         print("Closing connection.....")
         conn.close()
         print_lock.release()
@@ -45,7 +46,7 @@ def threading(conn):
         conn.settimeout(10)
         response = handle_request(conn,method,file_name,file)
         print(response)
-        conn.sendall(response.encode())
+        conn.sendall(response)
         print("Data is sent")
         data =b''
         try: 
@@ -83,29 +84,47 @@ def threading(conn):
 def handle_request(conn, method, file_name,file):
     if method == "GET":
         try:
-            f = open(f"{dir}{file_name}", mode="r")
+            
+            ext = file_name.split(".")[1]
             print("Reading file")
-            file_read = f.read()
-            f.close()  # Send HTTP response
-            response = 'HTTP/1.1 200 OK\r\n\r\n' + file_read
+            
+            if ext == "png":
+                f = open(f"{dir}{file_name}", mode="rb")
+                file_read = f.read()
+                f.close()  # Send HTTP response
+                response = 'HTTP/1.1 200 OK\r\n\r\n'
+                response = response.encode()    
+                response = response  + file_read
+            else:
+                f = open(f"{dir}{file_name}", mode="r")
+                file_read = f.read()
+                f.close()  # Send HTTP response
+                response = 'HTTP/1.1 200 OK\r\n\r\n' + file_read
+                response =response.encode()
             return response
         except IOError:
             print("IO Error")
             response = 'HTTP/1.1 404 NOT FOUND\r\n\r\n'
             return response
     elif method =='POST':
-        data = file
-        f = open(f"{dir}/{file_name}", "w")
-        f.write(data)
-        f.close()
+        ext = file_name.split(".")[1]
+        if ext == "png":
+            f = open(f"{dir}/{file_name}", mode="wb+")
+            file = f.write(file)
+            f.close()
+        else:
+            data = file
+            f = open(f"{dir}/{file_name}", "w")
+            f.write(data.decode())
+            f.close()
         response = 'HTTP/1.1 200 OK\r\n\r\n'
-        return response
+        return response.encode()
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     HOST = "127.0.0.1"
     PORT = 65432
     print("Starting Server....")
-    s.bind(("127.0.0.1", 65432))
+    s.bind(("127.0.0.1", 65433))
     s.listen()
     print(f"Socket is bind to {HOST}:{PORT}")
     #conn, addr = s.accept()
