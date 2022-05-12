@@ -46,9 +46,8 @@ for i in commands:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             print(f"Starting socket connection with {HOST}:{PORT}")
             s.connect((str(HOST), int(PORT)))
-
             if method == "GET":
-                request = f"{method} /{file_name} HTTP/1.0\r\nHOST: {HOST}:{PORT}\r\n\r\n"
+                request = f"{method} /{file_name} HTTP/1.1\r\nHOST: {HOST}:{PORT}\r\n\r\n"
                 s.sendall(request.encode())
                 data = s.recv(100000)
                 print("Waiting for data from server....")
@@ -74,18 +73,18 @@ for i in commands:
                         f = open(f"{dir}/{file_name}", mode="rb")
                         file = f.read()
                         f.close()
-                        request = f"POST /{file_name} HTTP/1.0\r\nHOST: {HOST}:{PORT}\r\n\r\n"
+                        request = f"POST /{file_name} HTTP/1.1\r\nHOST: {HOST}:{PORT}\r\n\r\n"
                         request = request.encode()
                         request = request + file + b"\r\n"
                     else:
                         f = open(f"{dir}/{file_name}",mode ="r")
                         file = f.read()
                         f.close()
-                        request = f"POST /{file_name} HTTP/1.0\r\nHOST: {HOST}:{PORT}\r\n\r\n{file}\r\n" 
+                        request = f"POST /{file_name} HTTP/1.1\r\nHOST: {HOST}:{PORT}\r\n\r\n{file}\r\n" 
                         request = request.encode()
                     s.sendall(request)
                 except IOError:
                     print("FILE NOT FOUND")
-            # s.close()
-            sleep(10)
+            
+            sleep(15)
 
