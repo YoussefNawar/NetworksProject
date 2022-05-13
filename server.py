@@ -4,6 +4,7 @@ from base64 import decode
 import socket
 from _thread import *
 import threading
+from time import sleep
 print_lock = threading.Lock()
 # HOST = input("Enter the server IP : ")
 # PORT = input("Enter the server port number :")
@@ -58,7 +59,7 @@ def threading(conn):
             while True:       
                 conn.settimeout(10)
                 print("Entered while loop")
-                data = conn.recv(1024)
+                data = conn.recv(100000)
                 request = data.split(b"\r\n\r\n")[0].decode()
                 #data = data.decode()
                 if request:
@@ -80,6 +81,7 @@ def threading(conn):
             print(len(response))
             for k in response:
                 conn.sendall(k)
+                sleep(1)
             print("Time out!")
             print("Closing connection.....")
             conn.close()

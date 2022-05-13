@@ -12,30 +12,34 @@ def parse_file(file_name):
     commands = f.read().split("\n")
     f.close()
     return commands
-
+cache = {}
 def parse(cmd):
     x = cmd.split()
+    ext = x[1].split(".")[1]
     method = x[0]
     file_name = x[1]
     host = x[2]
     if len(x) > 3:
         port = x[3]
-        return method,file_name,host,port
-    return method,file_name,host,80
+        return method,file_name,host,port,ext
+    return method,file_name,host,80,ext
 
 commands = parse_file("commands.txt")
-
+list_ext=[]
+list_names=[]
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.connect((str("127.0.0.1"), int(65433)))
     print(f"Starting socket connection with 127.0.0.1:65433")
     for i in commands:
-        method , file_name, HOST, PORT = parse(i)
+        method , file_name, HOST, PORT, EXT = parse(i)
+        list_ext.append(EXT)
+        list_names.append(file_name)
         if method == "GET":
             request = f"{method} /{file_name} HTTP/1.1\r\nHOST: {HOST}:{PORT}\r\n\r\n" 
             print(request)
             s.sendall(request.encode())
             #print("Waiting for data from server....")
-            data = b''
+            data = []
             #s.setblocking(False)
             
         elif method == "POST":
@@ -48,14 +52,31 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             except IOError:
                 print("FILE NOT FOUND")
         # sleep(5)
-        sleep(2)
+        sleep(1)
     while True:
         print("Waiting for data from server....")
-        buf = s.recv(1024) 
+        buf = s.recv(100000) 
         if not buf:
             break
-        data += buf
-    print(f"{data}")
+        data.append(buf)
+    #print(f"{data[0]}")
+    k=0
+    for j in data :
+        EXT = list_ext[k]
+        file_name = list_names[k]
+        k = k + 1
+        if str(EXT) == "png":
+            f = open(f"{dir}/{file_name}", mode="wb+")
+            file_png = j.split(b"\r\n\r\n")[1]
+            file = f.write(file_png)
+            f.close()
+            cache[request]=j
+        else:
+            f = open(f"{dir}/{file_name}", mode="w")
+            content = j.split(b"\r\n\r\n")[1]
+            file = f.write(content.decode())
+            f.close()
+            cache[request]=j.decode()
 # sleep(10)
 s.close()
 
