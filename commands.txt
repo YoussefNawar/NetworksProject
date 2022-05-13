@@ -1,2 +1,4 @@
 GET alo.png 127.0.0.1 65433
-GET alo.png 127.0.0.1 65433
+GET sora.png 127.0.0.1 65433
+GET test.txt 127.0.0.1 65433
+GET test2.txt 127.0.0.1 65433

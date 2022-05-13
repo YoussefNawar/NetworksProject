@@ -13,7 +13,7 @@ print_lock = threading.Lock()
 dir = "./ServerFiles/"
 
 def getTimeOutValue():
-    return 5
+    return 10
 
 def parse_request(command):
     x = command.split(' /',1)
@@ -31,7 +31,7 @@ def parse_request(command):
 
 
 def threading(conn):
-    data = conn.recv(100000)
+    data = conn.recv(1024)
     request = data.split(b"\r\n\r\n")[0].decode()
     method, file_name,protocol,host,port = parse_request(request)
     file = data.split(b"\r\n\r\n")[1]
@@ -43,30 +43,43 @@ def threading(conn):
         conn.close()
         print_lock.release()
     elif protocol =="HTTP/1.1":
+        response = []
+        i = 0
         conn.settimeout(10)
-        response = handle_request(conn,method,file_name,file)
+        response.append(handle_request(conn,method,file_name,file))
+        #i = i + 1
         #print(response)
-        conn.sendall(response)
+        #conn.sendall(response)
         print("Data is sent")
         data =b''
+        
         try: 
+            #conn.setblocking(False)
             while True:       
+                conn.settimeout(10)
                 print("Entered while loop")
-                data = conn.recv(100000)
+                data = conn.recv(1024)
                 request = data.split(b"\r\n\r\n")[0].decode()
                 #data = data.decode()
                 if request:
                     #print(data)
                     method, file_name,protocol,host,port = parse_request(request)
                     file = data.split(b"\r\n\r\n")[1]
-                    response = handle_request(conn,method,file_name,file)
-                    conn.sendall(response)
+                    response.append(handle_request(conn,method,file_name,file))
+                    #i = i + 1
+                    
                 if not data:
+                #    print(response)
+                    for k in response:
+                        conn.sendall(k)
                     print("Closing connection.....")
                     conn.close()
                     print_lock.release()
                     return
         except socket.timeout as e:
+            print(len(response))
+            for k in response:
+                conn.sendall(k)
             print("Time out!")
             print("Closing connection.....")
             conn.close()

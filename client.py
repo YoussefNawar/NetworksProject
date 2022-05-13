@@ -29,7 +29,7 @@ def parse(cmd):
 commands = parse_file("commands.txt")
 for i in commands:
     method , file_name, HOST, PORT, EXT = parse(i)
-    request = f"{method} /{file_name} HTTP/1.1\r\nHOST: {HOST}:{PORT}\r\n\r\n"
+    request = f"{method} /{file_name} HTTP/1.0\r\nHOST: {HOST}:{PORT}\r\n\r\n"
     if request in cache:
         if EXT == "png":
             print("This file is located in the  cache")
@@ -87,14 +87,14 @@ for i in commands:
                         f = open(f"{dir}/{file_name}", mode="rb")
                         file = f.read()
                         f.close()
-                        request = f"POST /{file_name} HTTP/1.1\r\nHOST: {HOST}:{PORT}\r\n\r\n"
+                        request = f"POST /{file_name} HTTP/1.0\r\nHOST: {HOST}:{PORT}\r\n\r\n"
                         request = request.encode()
                         request = request + file + b"\r\n"
                     else:
                         f = open(f"{dir}/{file_name}",mode ="r")
                         file = f.read()
                         f.close()
-                        request = f"POST /{file_name} HTTP/1.1\r\nHOST: {HOST}:{PORT}\r\n\r\n{file}\r\n" 
+                        request = f"POST /{file_name} HTTP/1.0\r\nHOST: {HOST}:{PORT}\r\n\r\n{file}\r\n" 
                         request = request.encode()
                     s.sendall(request)
                 except IOError:
