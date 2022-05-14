@@ -29,8 +29,24 @@ def parse_request(command):
      #   file = x[1]
      #   return method, file_name,protocol,None,None,file
     return method, file_name,protocol,None,None
-
-
+def pipeline(data,conn):
+    request = data.split(b"\r\n\r\n")[0].decode()
+    #data = data.decode()
+    if request:
+        #print(data)
+        method, file_name,protocol,host,port = parse_request(request)
+        file = data.split(b"\r\n\r\n")[1]
+        response = handle_request(conn,method,file_name,file)
+        conn.sendall(response)
+        #i = i + 1
+        return
+        
+    if not data:
+    #    print(response)
+        print("Closing connection.....")
+        conn.close()
+        print_lock.release()
+        return 
 def threading(conn):
     data = conn.recv(1024)
     request = data.split(b"\r\n\r\n")[0].decode()
@@ -44,22 +60,20 @@ def threading(conn):
         conn.close()
         print_lock.release()
     elif protocol =="HTTP/1.1":
-        response = []
-        i = 0
         conn.settimeout(10)
-        response.append(handle_request(conn,method,file_name,file))
-        #i = i + 1
-        #print(response)
-        #conn.sendall(response)
-        print("Data is sent")
+        response = handle_request(conn,method,file_name,file)
+        conn.sendall(response)
+        print("Response is sent")
         data =b''
         
         try: 
-            #conn.setblocking(False)
             while True:       
                 conn.settimeout(10)
                 print("Entered while loop")
                 data = conn.recv(100000)
+                print(data.decode())
+                start_new_thread(pipeline,(data,conn))
+                '''
                 request = data.split(b"\r\n\r\n")[0].decode()
                 #data = data.decode()
                 if request:
@@ -77,11 +91,12 @@ def threading(conn):
                     conn.close()
                     print_lock.release()
                     return
+                    '''
         except socket.timeout as e:
-            print(len(response))
-            for k in response:
-                conn.sendall(k)
-                sleep(1)
+            # for k in response1:
+            #     print(k)
+            #     conn.sendall(k)
+
             print("Time out!")
             print("Closing connection.....")
             conn.close()

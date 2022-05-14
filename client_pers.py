@@ -56,7 +56,9 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     while True:
         print("Waiting for data from server....")
         buf = s.recv(100000) 
+        print("Response received: " + buf.decode())
         if not buf:
+            print("Connection closed")
             break
         data.append(buf)
     #print(f"{data[0]}")
