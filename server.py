@@ -12,9 +12,9 @@ print_lock = threading.Lock()
 #HOST = "127.0.0.1"  # Standard loopback interface address (localhost)
 #PORT = 65432  # Port to listen on (non-privileged ports are > 1023)
 dir = "./ServerFiles/"
-
+counter = 0
 def getTimeOutValue():
-    return 10
+    return int(10 / counter)
 
 def parse_request(command):
     x = command.split(' /',1)
@@ -41,13 +41,14 @@ def pipeline(data,conn):
         #i = i + 1
         return
         
-    if not data:
-    #    print(response)
-        print("Closing connection.....")
-        conn.close()
-        print_lock.release()
-        return 
-def threading(conn):
+    # if not data:
+    # #    print(response)
+    #     counter = counter - 1
+    #     print("Closing connection.....")
+    #     conn.close()
+    #     print_lock.release()
+    #     return 
+def threading(conn,counter):
     data = conn.recv(1024)
     request = data.split(b"\r\n\r\n")[0].decode()
     method, file_name,protocol,host,port = parse_request(request)
@@ -60,15 +61,15 @@ def threading(conn):
         conn.close()
         print_lock.release()
     elif protocol =="HTTP/1.1":
-        conn.settimeout(10)
+        conn.settimeout(getTimeOutValue())
         response = handle_request(conn,method,file_name,file)
         conn.sendall(response)
         print("Response is sent")
         data =b''
-        
+        print(counter)
         try: 
             while True:       
-                conn.settimeout(10)
+                conn.settimeout(getTimeOutValue())
                 print("Entered while loop")
                 data = conn.recv(100000)
                 print(data.decode())
@@ -96,7 +97,7 @@ def threading(conn):
             # for k in response1:
             #     print(k)
             #     conn.sendall(k)
-
+            counter = counter - 1
             print("Time out!")
             print("Closing connection.....")
             conn.close()
@@ -163,10 +164,11 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     while True:
         s.listen()
         conn, addr = s.accept()
+        counter = counter + 1
         # conn.settimeout()
         print(f"Connected by {addr}")
         print_lock.acquire()
-        start_new_thread(threading,(conn,))
+        start_new_thread(threading,(conn,counter))
 
 # habal = parse_request("POST /tesrwvrt.txt HTTP/1.1\nContent-Type: text/plain\nPostman-Token: 8952b183-6f71-4ea7-93d9-ebcfe207b717\nHost: 127.0.0.1:65432\nContent-Length: 13\r\n\r\nkjbrvsnvkrsnv")
 # print(habal)
