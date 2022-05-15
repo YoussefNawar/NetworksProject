@@ -99,6 +99,5 @@ for i in commands:
                     s.sendall(request)
                 except IOError:
                     print("FILE NOT FOUND")
-            
-            sleep(15)
+            # sleep(10)
 

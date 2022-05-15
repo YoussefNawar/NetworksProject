@@ -41,7 +41,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             #print("Waiting for data from server....")
             data = []
             #s.setblocking(False)
-            
+        
         elif method == "POST":
             try:       
                 f = open(f"{dir}/{file_name}",mode ="r")
@@ -52,11 +52,11 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             except IOError:
                 print("FILE NOT FOUND")
         # sleep(5)
-        sleep(1)
+        # sleep(1)
     while True:
         print("Waiting for data from server....")
         buf = s.recv(100000) 
-        # print("Response received: " + buf.decode())
+        # print(buf)
         if not buf:
             print("Connection closed")
             break
