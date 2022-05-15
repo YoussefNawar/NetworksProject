@@ -6,6 +6,7 @@ from _thread import *
 import threading
 from time import sleep
 from numpy import not_equal
+import re
 print_lock = threading.Lock()
 # HOST = input("Enter the server IP : ")
 # PORT = input("Enter the server port number :")
@@ -13,44 +14,26 @@ print_lock = threading.Lock()
 #HOST = "127.0.0.1"  # Standard loopback interface address (localhost)
 #PORT = 65432  # Port to listen on (non-privileged ports are > 1023)
 dir = "./ServerFiles"
-counter = 0
-def getTimeOutValue():
-    return int(10 / counter)
+global COUNTER
+global TIMEOUT
 
 def parse_multiple_requests(requests):
+    gets = []
+    for match in re.finditer(b"GET", requests):
+        s = match.start()
+        gets.append(s)
+    for match in re.finditer(b"POST", requests):
+        s = match.start()
+        gets.append(s)
+    gets.sort()
     my_list = []
-    while len(requests) != 0:
-        try:
-            h = requests.index(b"GET")
-        except ValueError:
-            h = -1
-        if h >= 0:
-            request = requests.split(b"\r\n\r\n",1)
-            x = request[0]+b"\r\n\r\n"
-            my_list.append(x)
-            requests = request[1]
-        else:
-            try:
-                h = requests.index(b"png")
-            except ValueError:
-                h = -1
-            if h == -1:
-                request = requests.split(b"\r\n",4)
-                x = request[0]+b"\r\n"+request[1]+b"\r\n\r\n"+request[3]+b"\r\n"
-                my_list.append(x)
-                try:
-                    requests = request[4]
-                except IndexError:
-                    break    
-            else:
-                # print(requests)
-                request = requests.split(b"\r\n",5)
-                x = request[0]+b"\r\n"+request[1]+b"\r\n\r\n"+request[3]+request[4]+b"\r\n"
-                my_list.append(x)
-                try:
-                    requests = request[5]
-                except IndexError:
-                    break         
+    print(gets)
+    counter = 0 
+    for i in range(len(gets) - 1):
+        x = requests[gets[i]:gets[i + 1]]
+        my_list.append(x)
+    my_list.append(requests[gets[len(gets) - 1]:])
+    print(my_list)
     return my_list
 
 def parse_request(command):
@@ -72,6 +55,7 @@ def pipeline(data,conn):
     for i in my_list:
         data = i
         request = data.split(b"\r\n\r\n")
+        print(request)
         method, file_name,protocol,host,port = parse_request(request)
         file = data.split(b"\r\n\r\n")[1]
         response = handle_request(conn,method,file_name,file)
@@ -89,8 +73,9 @@ def pipeline(data,conn):
     #     #i = i + 1
     return
         
-def threading(conn,counter):
-    data = conn.recv(100000)
+def threading(conn,):
+    global COUNTER
+    data = conn.recv(1000000)
     my_list = parse_multiple_requests(data)
     data = my_list[0]
     # print(data)
@@ -118,20 +103,16 @@ def threading(conn,counter):
             response = handle_request(conn,method,file_name,file)
             conn.sendall(response)
             print("Response is sent")
-        conn.settimeout(getTimeOutValue())
+        conn.settimeout(TIMEOUT)
         data =b''
-        # print(counter)
         try: 
             while True:       
-                conn.settimeout(getTimeOutValue())
+                conn.settimeout(TIMEOUT)
                 print("Entered while loop")
                 data = conn.recv(1024)
                 start_new_thread(pipeline,(data,conn))
         except socket.timeout as e:
-            # for k in response1:
-            #     print(k)
-            #     conn.sendall(k)
-            counter = counter - 1
+            COUNTER = COUNTER - 1
             print("Time out!")
             print("Closing connection.....")
             conn.close()
@@ -162,45 +143,48 @@ def handle_request(conn, method, file_name,file):
         except IOError:
             print("IO Error")
             response = 'HTTP/1.1 404 NOT FOUND\r\n\r\n'
-            print(response)
+            response = response.encode()
+            # print(response)
             return response
     elif method =='POST':
         ext = file_name.split(".")[1]
         if ext == "png":
             f = open(f"{dir}/{file_name}", mode="wb+")
             file = f.write(file)
+            print("Image is written")
             f.close()
         else:
             data = file
             f = open(f"{dir}/{file_name}", "w")
-            print("nvdolrfi")
+            print("File is written")
             f.write(data.decode())
             f.close()
         response = 'HTTP/1.1 200 OK\r\n\r\n'
-        print(response)
+        print("HTTP/1.1 200 OK")
         return response.encode()
+
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     HOST = "127.0.0.1"
-    PORT = 65432
+    PORT = 65433
     print("Starting Server....")
     s.bind(("127.0.0.1", 65433))
     #s.listen()
     print(f"Socket is bind to {HOST}:{PORT}")
     #conn, addr = s.accept()
+    COUNTER = 0
     while True:
         s.listen()
         conn, addr = s.accept()
-        counter = counter + 1
-        # conn.settimeout()
+        COUNTER = COUNTER + 1
+        TIMEOUT = 10/COUNTER
         print(f"Connected by {addr}")
         print_lock.acquire()
-        start_new_thread(threading,(conn,counter))
+        start_new_thread(threading,(conn,))
+
 
 # habal = parse_request("POST /tesrwvrt.txt HTTP/1.1\nContent-Type: text/plain\nPostman-Token: 8952b183-6f71-4ea7-93d9-ebcfe207b717\nHost: 127.0.0.1:65432\nContent-Length: 13\r\n\r\nkjbrvsnvkrsnv")
 # print(habal)
-# requests = b"GET /alo.png HTTP/1.1\r\nHOST: 127.0.0.1:65433\r\n\r\nGET /sora.png HTTP/1.1\r\nHOST: 127.0.0.1:65433\r\n\r\nPOST /test.txt HTTP/1.1\r\nHOST:127.0.0.1: 65433\r\n\r\nsengab 5awl fash5 \n\nHTTP/1.1 200 OK\r\nGET /test.txt HTTP/1.1\r\nHOST: 127.0.0.1:65433\r\n\r\n"
-# my_list = parse_multiple_requests(requests)
-# print(my_list)
+# requests = b"GET /alo.png HTTP/1.1\r\nHOST: 127.0.0.1:65433\r\n\r\nGET /sora.png HTTP/1.1\r\nHOST: 127.0.0.1:65433\r\n\r\nPOST /test.txt HTTP/1.1\r\nHOST:127.0.0.1: 65433\r\n\r\nsengab 5awl fash5 \n\nHTTP/1.1 200 OK GET /test.txt HTTP/1.1\r\nHOST: 127.0.0.1:65433\r\n\r\n"
 
 

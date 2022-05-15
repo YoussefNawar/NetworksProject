@@ -72,13 +72,13 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             file_png = j.split(b"\r\n\r\n")[1]
             file = f.write(file_png)
             f.close()
-            cache[request]=j
+            # cache[request]=j
         else:
             f = open(f"{dir}/{file_name}", mode="w")
             content = j.split(b"\r\n\r\n")[1]
             file = f.write(content.decode())
             f.close()
-            cache[request]=j.decode()
+            # cache[request]=j.decode()
 # sleep(10)
 s.close()
 

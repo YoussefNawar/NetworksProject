@@ -63,7 +63,7 @@ for i in commands:
             if method == "GET":
                # request = f"{method} /{file_name} HTTP/1.1\r\nHOST: {HOST}:{PORT}\r\n\r\n"
                 s.sendall(request.encode())
-                data = s.recv(100000)
+                data = s.recv(1000000)
                 print("Waiting for data from server....")
                 
                 if EXT == "png":
@@ -89,12 +89,12 @@ for i in commands:
                         f.close()
                         request = f"POST /{file_name} HTTP/1.0\r\nHOST: {HOST}:{PORT}\r\n\r\n"
                         request = request.encode()
-                        request = request + file + b"\r\n"
+                        request = request + file
                     else:
                         f = open(f"{dir}/{file_name}",mode ="r")
                         file = f.read()
                         f.close()
-                        request = f"POST /{file_name} HTTP/1.0\r\nHOST: {HOST}:{PORT}\r\n\r\n{file}\r\n" 
+                        request = f"POST /{file_name} HTTP/1.0\r\nHOST: {HOST}:{PORT}\r\n\r\n{file}" 
                         request = request.encode()
                     s.sendall(request)
                 except IOError:
