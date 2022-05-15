@@ -1,2 +1,1 @@
-GET test2.txt 127.0.0.1 65433
-GET test2.txt 127.0.0.1 65433
+POST Bubble.png 127.0.0.1 65433

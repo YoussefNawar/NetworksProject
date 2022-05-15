@@ -3,6 +3,7 @@
 from base64 import decode
 import socket
 from _thread import *
+from subprocess import TimeoutExpired
 import threading
 from time import sleep
 from numpy import not_equal
@@ -27,7 +28,6 @@ def parse_multiple_requests(requests):
         gets.append(s)
     gets.sort()
     my_list = []
-    print(gets)
     counter = 0 
     for i in range(len(gets) - 1):
         x = requests[gets[i]:gets[i + 1]]
@@ -54,7 +54,7 @@ def pipeline(data,conn):
     my_list = parse_multiple_requests(data)
     for i in my_list:
         data = i
-        request = data.split(b"\r\n\r\n")
+        request = data.split(b"\r\n\r\n")[0].decode()
         print(request)
         method, file_name,protocol,host,port = parse_request(request)
         file = data.split(b"\r\n\r\n")[1]
@@ -75,7 +75,15 @@ def pipeline(data,conn):
         
 def threading(conn,):
     global COUNTER
+    global TIMEOUT
     data = conn.recv(1000000)
+    # buff = b""
+    # while True:
+    #     data = s.recv(1000000)
+    #     if not data:
+    #         break
+    #     buff = buff + data
+    # data = buff
     my_list = parse_multiple_requests(data)
     data = my_list[0]
     # print(data)

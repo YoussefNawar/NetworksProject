@@ -53,14 +53,13 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 print("FILE NOT FOUND")
         # sleep(5)
         # sleep(1)
+    buff = b""
     while True:
-        print("Waiting for data from server....")
-        buf = s.recv(100000) 
-        # print(buf)
-        if not buf:
-            print("Connection closed")
+        data = s.recv(100000)
+        if not data:
             break
-        data.append(buf)
+        buff = buff + data
+    data = buff
     #print(f"{data[0]}")
     k=0
     for j in data :

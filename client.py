@@ -3,10 +3,12 @@
 import socket
 from time import sleep
 from traceback import print_tb
+import sys
 
 # HOST = "127.0.0.1"  # The server's hostname or IP address
 # PORT = 65432  # The port used by the server
 dir = "./ClientFiles"
+inputfile  = sys.argv[1]
 
 def parse_file(file_name):
     f = open(f"{file_name}", mode = "r")
@@ -26,7 +28,9 @@ def parse(cmd):
         return method,file_name,host,port,ext
     return method,file_name,host,80,ext
 
-commands = parse_file("commands.txt")
+# x = sys.argv
+# print(x[1])
+commands = parse_file(inputfile)
 for i in commands:
     method , file_name, HOST, PORT, EXT = parse(i)
     request = f"{method} /{file_name} HTTP/1.0\r\nHOST: {HOST}:{PORT}\r\n\r\n"
@@ -63,7 +67,13 @@ for i in commands:
             if method == "GET":
                # request = f"{method} /{file_name} HTTP/1.1\r\nHOST: {HOST}:{PORT}\r\n\r\n"
                 s.sendall(request.encode())
-                data = s.recv(1000000)
+                buff = b""
+                while True:
+                    data = s.recv(1000000)
+                    if not data:
+                        break
+                    buff = buff + data
+                data = buff
                 print("Waiting for data from server....")
                 
                 if EXT == "png":
